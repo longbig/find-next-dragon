@@ -12,14 +12,11 @@ public class LeetCode053 {
      * @return
      */
     public int maxSubArray(int[] nums) {
-        if (nums.length == 0) {
-            return 0;
+        int res = nums[0], pre = 0;
+        for (int i = 0; i < nums.length; i++) {
+            pre = Math.max(pre + nums[i], nums[i]);
+            res = Math.max(pre, res);
         }
-        int f_n = 0, maxAns = nums[0];
-        for (int num : nums) {
-            f_n = Math.max(f_n + num, num);
-            maxAns = Math.max(f_n, maxAns);
-        }
-        return maxAns;
+        return res;
     }
 }
