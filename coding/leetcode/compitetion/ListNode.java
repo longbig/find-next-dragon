@@ -20,4 +20,9 @@ public class ListNode {
         this.val = val;
         this.next = next;
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
 }
