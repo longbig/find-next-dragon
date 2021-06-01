@@ -1,4 +1,4 @@
-package leetcode.easy;
+package algorithm;
 
 import java.util.Iterator;
 import java.util.LinkedList;
