@@ -19,11 +19,12 @@ public class LeetCode151 {
             right--;
         }
 
-        StringBuffer word = new StringBuffer();
+        //利用栈
         LinkedList<String> stack = new LinkedList<>();
+        StringBuffer word = new StringBuffer();
         while (left <= right) {
             char c = s.charAt(left);
-            if ((word.length() != 0) && c == ' ') {
+            if (word.length() != 0 && c == ' ') {
                 stack.push(word.toString());
                 word.setLength(0);
             }
