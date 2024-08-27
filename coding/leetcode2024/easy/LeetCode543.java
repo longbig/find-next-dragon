@@ -1,6 +1,6 @@
 package leetcode2024.easy;
 
-import leetcode.TreeNode;
+import leetcode2021.TreeNode;
 
 /**
  * @author yuyunlong

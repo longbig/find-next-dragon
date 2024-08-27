@@ -1,6 +1,6 @@
 package leetcode2024.easy;
 
-import leetcode.compitetion.ListNode;
+import leetcode2021.compitetion.ListNode;
 
 /**
  * @author yuyunlong

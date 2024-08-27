@@ -1,6 +1,6 @@
 package quiz;
 
-import leetcode.TreeNode;
+import leetcode2021.TreeNode;
 
 /**
  * @author yuyunlong

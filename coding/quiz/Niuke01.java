@@ -1,10 +1,9 @@
 package quiz;
 
-import leetcode.TreeNode;
+import leetcode2021.TreeNode;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 /**
