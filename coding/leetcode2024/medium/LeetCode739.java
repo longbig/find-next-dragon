@@ -20,16 +20,15 @@ import java.util.LinkedList;
 public class LeetCode739 {
 
     public int[] dailyTemperatures(int[] temperatures) {
-        //单调递增栈
+        //单调递减栈
         Deque<Integer> stack = new LinkedList<>();
         int[] result = new int[temperatures.length];
         for (int i = 0; i < temperatures.length; i++) {
-            while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
+            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
                 int preIndex = stack.pop();
                 result[preIndex] = i - preIndex;
             }
             stack.push(i);
-
         }
         return result;
     }
