@@ -1,6 +1,6 @@
 package leetcode2024.medium;
 
-import leetcode.compitetion.ListNode;
+import leetcode2021.compitetion.ListNode;
 
 /**
  * @author Administrator

@@ -1,6 +1,6 @@
 package meituan;
 
-import leetcode.compitetion.ListNode;
+import leetcode2021.compitetion.ListNode;
 
 import java.util.ArrayList;
 import java.util.List;

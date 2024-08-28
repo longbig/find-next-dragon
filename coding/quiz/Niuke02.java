@@ -1,8 +1,7 @@
 package quiz;
 
-import leetcode.compitetion.ListNode;
+import leetcode2021.compitetion.ListNode;
 
-import java.util.LinkedList;
 import java.util.Stack;
 
 /**

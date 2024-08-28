@@ -1,6 +1,6 @@
 package algorithm;
 
-import leetcode.compitetion.ListNode;
+import leetcode2021.compitetion.ListNode;
 
 /**
  * @author yuyunlong
