@@ -1,6 +1,6 @@
 package leetcode2024.medium;
 
-import leetcode.TreeNode;
+import leetcode2021.TreeNode;
 
 /**
  * @author Administrator
