@@ -32,7 +32,6 @@ public class LeetCode347 {
             }
             countMap.put(nums[i], curr);
         }
-        HashMap
         for (Map.Entry<Integer, Integer> integerIntegerEntry : countMap.entrySet()) {
             int[] subNode = new int[]{integerIntegerEntry.getKey(), integerIntegerEntry.getValue()};
             priorityQueue.offer(subNode);
