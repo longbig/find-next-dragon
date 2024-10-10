@@ -1,0 +1,3 @@
+otpauth://totp/yuyunlong?secret=QQ2EUFTXBD2ZD4P372TJJZIULE
+otpauth://totp/GitHub:longbig?secret=UOQD2KR4UWO22TOT&issuer=GitHub
+otpauth://totp/TeamViewer:dnboy985%40gmail.com?secret=2PX7XZY6ANIWGFTSELWJZC6F&issuer=TeamViewer

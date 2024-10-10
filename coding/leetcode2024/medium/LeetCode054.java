@@ -24,38 +24,43 @@ public class LeetCode054 {
      * @return
      */
     public List<Integer> spiralOrder(int[][] matrix) {
-        //初始化边界
-        int left = 0;
-        int down = matrix.length - 1;
+        if (matrix == null) {
+            return new ArrayList<>();
+        }
         int up = 0;
+        int down = matrix.length - 1;
+        int left = 0;
         int right = matrix[0].length - 1;
         List<Integer> result = new ArrayList<>();
-
-        //循环，直到边界交叉才退出
         while (true) {
-            //上
             for (int i = left; i <= right; i++) {
                 result.add(matrix[up][i]);
             }
-            if (++up > down) break;
+            if (++up > down) {
+                break;
+            }
 
-            //右
             for (int i = up; i <= down; i++) {
                 result.add(matrix[i][right]);
             }
-            if (--right < left) break;
+            if (--right < left) {
+                break;
+            }
 
-            //下
             for (int i = right; i >= left; i--) {
                 result.add(matrix[down][i]);
             }
-            if (--down < up) break;
+            if (--down < up) {
+                break;
+            }
 
-            //左
             for (int i = down; i >= up; i--) {
                 result.add(matrix[i][left]);
             }
-            if (++left > right) break;
+            if (++left > right) {
+                break;
+            }
+
         }
         return result;
 

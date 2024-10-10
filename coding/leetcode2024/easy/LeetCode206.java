@@ -9,20 +9,20 @@ import leetcode2021.compitetion.ListNode;
  */
 public class LeetCode206 {
 
+    //迭代的方法
     public ListNode reverseList(ListNode head) {
-        //用一个中间结点
         if (head == null || head.next == null) {
             return head;
         }
-        ListNode hh = null;
-        while (head != null) {
-            ListNode temp = head;
-            head = head.next;
-            temp.next = hh;
-            hh = temp;
-
+        ListNode curr = head, pre = null;
+        while (curr != null) {
+            ListNode temp = curr.next;
+            curr.next = pre;
+            pre = curr;
+            curr = temp;
         }
-        return hh;
+        return pre;
+
     }
 
 
@@ -32,15 +32,13 @@ public class LeetCode206 {
      * @return
      */
     public ListNode reverseListForDigui(ListNode head) {
-        //用一个中间结点
         if (head == null || head.next == null) {
             return head;
         }
-        ListNode newHead = reverseListForDigui(head.next);
+        ListNode newNode = reverseListForDigui(head.next);
         head.next.next = head;
         head.next = null;
-        return newHead;
-
+        return newNode;
     }
 
     public static void main(String[] args) {
