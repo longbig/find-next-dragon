@@ -15,24 +15,50 @@ import leetcode2021.TreeNode;
  */
 public class LeetCode236 {
 
-
-
-    //递归思路，遍历，找是否命中了其中一个节点，如果当前节点的左右子节点都有，说明当前节点就是最深的祖先节点了
-    //反之，如果只有左子树上找到节点，右节点返回空，那么只找左子树就行。
+    //递归的方式，假设root的左右子树看做单个节点，就只需要判断这三个节点的关系就行
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         if (root == null || root == p || root == q) {
             return root;
         }
-        TreeNode leftNode = lowestCommonAncestor(root.left, p, q);
-        TreeNode rightNode = lowestCommonAncestor(root.right, p, q);
-        if (leftNode != null && rightNode != null) {
-            return root;
+        //看p q是分开在一个子树里，还是两个子树里
+        TreeNode findLeft = lowestCommonAncestor(root.left, p, q);
+        TreeNode findRight = lowestCommonAncestor(root.right, p, q);
+        if (findLeft == null) {
+            return findRight;
+        } else if (findRight == null) {
+            return findLeft;
         }
-        if (leftNode == null) {
-            return rightNode;
-        }
-        return leftNode;
+        return root;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    //递归思路，遍历，找是否命中了其中一个节点，如果当前节点的左右子节点都有，说明当前节点就是最深的祖先节点了
+//    //反之，如果只有左子树上找到节点，右节点返回空，那么只找左子树就行。
+//    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+//        if (root == null || root == p || root == q) {
+//            return root;
+//        }
+//        TreeNode leftNode = lowestCommonAncestor(root.left, p, q);
+//        TreeNode rightNode = lowestCommonAncestor(root.right, p, q);
+//        if (leftNode != null && rightNode != null) {
+//            return root;
+//        }
+//        if (leftNode == null) {
+//            return rightNode;
+//        }
+//        return leftNode;
+//    }
 
 
 }

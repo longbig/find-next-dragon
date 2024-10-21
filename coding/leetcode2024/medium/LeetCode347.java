@@ -11,36 +11,24 @@ import java.util.*;
  */
 public class LeetCode347 {
 
+    //解法：用hashmap计算元素出现的次数，接着使用优先队列，按频率取前K个元素
     public int[] topKFrequent(int[] nums, int k) {
-        Queue<int[]> priorityQueue = new PriorityQueue<>(new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                if (o1[1] < o2[1]) {
-                    return 1;
-                }
-                return -1;
-            }
-        });
+        Queue<int[]> pQueue = new PriorityQueue<>((o1, o2) -> (o2[1] - o1[1]));
         Map<Integer, Integer> countMap = new HashMap<>();
-        //遍历数组，放入堆中
         for (int i = 0; i < nums.length; i++) {
-            Integer curr = countMap.get(nums[i]);
-            if (curr == null) {
-                curr = 1;
-            } else {
-                curr += 1;
-            }
-            countMap.put(nums[i], curr);
+            Integer c = countMap.getOrDefault(nums[i], 0);
+            countMap.put(nums[i], ++c);
         }
-        for (Map.Entry<Integer, Integer> integerIntegerEntry : countMap.entrySet()) {
-            int[] subNode = new int[]{integerIntegerEntry.getKey(), integerIntegerEntry.getValue()};
-            priorityQueue.offer(subNode);
+        for (Map.Entry<Integer, Integer> entry : countMap.entrySet()) {
+            Integer key = entry.getKey();
+            Integer count = entry.getValue();
+            pQueue.offer(new int[]{key, count});
         }
 
+        //取key个数
         int[] result = new int[k];
         for (int i = 0; i < k; i++) {
-            int[] node = priorityQueue.poll();
-            result[i] = node[0];
+            result[i] = pQueue.poll()[0];
         }
         return result;
 
