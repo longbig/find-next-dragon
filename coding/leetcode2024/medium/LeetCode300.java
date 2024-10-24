@@ -15,6 +15,7 @@ public class LeetCode300 {
 
     public int lengthOfLIS(int[] nums) {
         if (nums == null) {
+            Object
             return 0;
         }
 
