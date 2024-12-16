@@ -14,9 +14,10 @@ package leetcode2024.medium;
 public class LeetCode300 {
 
     public int lengthOfLIS(int[] nums) {
-        if (nums == null) {
-            return 0;
-        }
+//        if (nums == null) {
+//            Object
+//            return 0;
+//        }
 
         int[] dp = new int[nums.length];
         int maxLen = 0;
