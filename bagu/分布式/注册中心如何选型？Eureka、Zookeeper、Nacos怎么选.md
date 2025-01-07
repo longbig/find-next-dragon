@@ -20,7 +20,7 @@ Eureka的官方文档：[Netflix Eureka](https://github.com/Netflix/eureka/wiki)
 
 Eureka在多个机房部署的架构图如下，这也是它高可用的优势
 
-![](D:\IdeaProjects\find-next-dragon\bagu\img\9_注册中心选型1.png)
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/img/9_注册中心选型1.png)
 
 解释说明：
 
@@ -70,7 +70,87 @@ DiscoveryManager.getInstance().shutdownComponent()
 
 ## 2. Nacos工作原理
 
+Nacos官方文档地址：[Nacos架构 2.3版本](https://nacos.io/docs/v2.3/architecture)，注册中心设计原理文档：[Nacos注册中心](https://nacos.io/docs/ebook/ynstox/)
 
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/img/9_注册中心选型2.png)
 
+上面的图比较复杂，这里贴下其他人的关于注册中心这部分的架构图
 
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/img/9_注册中心选型3.png)
 
+整体流程也就是服务发现那套流程：
+
+- 服务提供者轮询注册中心集群节点地址，把自己的协议地址注册到Nacos server
+- 服务消费者需要从Nacos Server上去查询服务提供者的地址（根据服务名称）
+- Nacos Server需要感知到服务提供者的上下线的变化
+- 服务消费者需要动态感知到Nacos Server端服务地址的变化
+
+Nacos采用了**Pull和Push同时运作**的方式来保证本地服务实例列表的动态感知。服务消费者通过定时任务的方式每10s Pull一次数据，Nacos Server在服务提供者出现变化时，基于UDP协议PUSH更新
+
+### 2.1 数据模型
+
+Zookeeper使用的是抽象的树形K-V组织结构，没有专门的数据模型。 Eureka 或者 Consul 都是做到了实例级别的数据扩展。Nacos使用的是**服务-集群-实例**的三层数据模型。
+
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/img/9_注册中心选型4.png)
+
+从上图的分级数据模型可以看到：
+
+* 服务级别：保存了健康检查开关、元数据、路由机制、保护阈值等设置
+* 集群保存了健康检查模式、元数据、同步机制等数据
+* 实例保存了该实例的ip、端口、权重、健康检查状态、下线状态、元数据、响应时间。
+
+### 2.2 数据一致性协议选择（CP or AP）
+
+Nacos 因为要支持多种服务类型的注册，并能够具有机房容灾、集群扩展等必不可少的能力，是支持AP 和 CP 两种一致性协议的，默认是AP模式
+
+- 如果注册Nacos的client节点注册时ephemeral=true，那么Nacos集群对这个client节点的效果就是AP，采用distro协议实现；
+- 而注册Nacos的client节点注册时ephemeral=false，那么Nacos集群对这个节点的效果就是CP的，采用raft协议实现。
+
+根据client注册时的属性，AP，CP同时混合存在，只是对不同的client节点效果不同。
+
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/img/9_注册中心选型5.png)
+
+Distro 协议则是参考了内部 ConfigServer 和开源 Eureka ，在不借助第三方存储的情况下，实现基本大同小异。Distro 重点是做了一些逻辑的优化和性能的调优。
+
+## 3.注册中心比较
+
+| 对比项目        | Nacos                      | Eureka      | Consul            | Zookeeper  |
+| --------------- | -------------------------- | ----------- | ----------------- | ---------- |
+| 一致性协议      | 支持AP和CP模式             | AP模式      | CP模式            | CP模式     |
+| 健康检查        | TCP/HTTP/MYSQL/Client Beat | Client Beat | TCP/HTTP/gRPC/Cmd | Keep Alive |
+| 负载均衡策略    | 权重/metadata/Selector     | Ribbon      | Fabio             | -          |
+| 幂等保护        | 有                         | 有          | 无                | 无         |
+| 自动注入实例    | 支持                       | 支持        | 不支持            | 支持       |
+| 访问协议        | HTTP/DNS                   | HTTP        | HTTP/DNS          | TCP        |
+| 监视支持        | 支持                       | 支持        | 支持              | 支持       |
+| 多数据中心      | 支持                       | 支持        | 支持              | 不支持     |
+| 跨注册中心同步  | 支持                       | 支持        | 不支持            | 不支持     |
+| SpringCloud集成 | 支持                       | 不支持      | 支持              | 不支持     |
+| Dubbo集成       | 支持                       | 不支持      | 不支持            | 不支持     |
+| k8s集成         | 支持                       | 不支持      | 不支持            | 不支持     |
+
+### 3.1选型场景
+
+#### Nacos
+
+适用场景包括：
+
+- **微服务架构**：微服务架构，尤其是需要动态服务发现和配置管理时，Nacos 是一个不错的选择。
+- **云原生应用**：Nacos 提供了良好的 Kubernetes 支持，适合运行在云环境中的应用。
+- **弹性功能**：如果系统需要负载均衡和服务治理功能，Nacos 提供强大的支持。
+
+#### Eureka
+
+- **Spring Cloud 生态系统**：如果您的项目是基于 Spring Cloud 的，Eureka 是最常用的注册中心，集成非常简单。
+- **AP 模式需要**：适合对一致性要求不高的场景，可以承担部分服务不可用的风险。
+
+#### Consul
+
+没写关于consul的工作原理，简单列下适用场景：
+
+- **多数据中心**：适合大型分布式系统，尤其是需要在多个数据中心之间提供服务发现和注册的场景。
+
+#### Zookeeper
+
+- 适合对一致性要求非常高的场景，例如分布式协调、分布式锁等。
+- **复杂的分布式应用**：在需要严格一致性系统中，如 Hadoop 和 Kafka，Zookeeper 是常见的选择。
