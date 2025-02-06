@@ -1,12 +1,10 @@
-# AI编程：Coze + Trae实现思维导图插件
+# AI编程：Coze + Cursor实现一个思维导图的浏览器插件
 
-> 这是小卷对AI编程工具学习的第3篇文章，今天使用的AI编程是字节新出的Trae，因为才出来不久，用的时候只有Mac版本，今天以生成一个思维导图的浏览器插件为例，试下Trae的效果
+> 这是小卷对AI编程工具学习的第3篇文章，今天以实际开发一个思维导图的需求为例，了解AI编程开发的整个过程
 
 ## 1.效果展示
 
-
-
-
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\13.png)
 
 ## 2.AI编程开发流程
 
@@ -78,6 +76,101 @@ curl --location --request POST 'https://api.coze.cn/v1/workflow/run' \
 }'
 ```
 
-![](/Users/yuyunlong/Pictures/博客/AI编程Trae使用/7.png)
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\7.png)
 
-![](/Users/yuyunlong/Pictures/博客/AI编程Trae使用/8.png)
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\8.png)
+
+## 6. Cursor编程集成Coze插件
+
+为了开发生成思维导图的浏览器插件，我们开始逐步操作，第一步，先生成插件的基础框架：
+
+```shell
+## 用户故事
+用户选中文字，可以显示浮动按钮“生成思维导图”，点击后弹出右侧窗口，显示对应的文字
+
+# 注意：
+1.使用manifest v3版本开发
+2.注意中文编码问题
+
+# 任务
+请按照用户故事和注意点帮我开发谷歌插件
+```
+
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\9.png)
+
+接着生成侧边栏的功能
+
+```shell
+继续侧边栏的实现：
+1.创建一个侧边栏的HTML页面
+2.实现在background.js中打开侧边栏的逻辑
+3.添加侧边栏的样式
+```
+
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\10.png)
+
+可能会出现一些bug问题，我们把bug发给cursor后继续修改完善，下面是框架的效果图，可以看到已经满足我们的需要了，然后可以进行下一步操作了
+
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\11.png)
+
+### 6.1 整合coze API
+
+基于现有代码，现在我们需要整合Coze的API，建议提前把已有功能告诉Cursor，这样也能更好地理解代码背景。输入提示词示例，可结合个人实际情况调整：
+
+```shell
+# 目的
+用户需求是基于网页选中的内容生成一个思维导图
+# 用户故事
+用户在网页上选中一段文字，点击浮动按钮，可以生成思维导图的图片，在侧边栏展示
+# 生成思维导图的接口
+## curl请求的代码
+curl --location --request POST 'https://api.coze.cn/v1/workflow/run' \
+--header 'Authorization: Bearer 替换为自己的' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "workflow_id": "替换为自己的",
+    "parameters": {
+        "input": "生成分布式系统的思维导图"
+    },
+    "app_id": "替换为自己的APP_ID"
+}'
+
+## 请求参数说明
+1. parameters下面的input：网页选中内容
+
+## 返回数据
+{
+    "code": 0,
+    "cost": "0",
+    "data": "{\"output\":\"https://static.shutu.cn/shutu/jpeg/opence/2025/02/04/77b63eae2ea61d3******223.jpeg\"}",
+    "debug_url": "https://www.coze.cn/work_flow?execute_id=7467838*******",
+    "msg": "Success",
+    "token": 0
+}
+
+## 返回参数说明
+1. data下的output为思维导图的图片地址
+2.code 状态码，不是0代表出差
+3. msg 返回信息
+
+# 注意
+1. 注意使用manifest v3版本开发
+2. 注意中文编码问题
+
+# 任务
+根据 用户故事 和提供的 生成思维导图接口，以及相关注意点，请优化当前谷歌插件
+```
+
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\12.png)
+
+![](D:\IdeaProjects\find-next-dragon\bagu\AI编程\AI编程Trae使用\13.png)
+
+最终效果已满足用户需求了！！！
+
+剩下的比如图标不好看等等问题可以自行调整
+
+## 6.总结
+
+今天通过一个实际需求，了解了AI编程的整个开发流程，相信看到最后的读者也能自行学会AI编程。
+
+在AI时代，以后的程序员可能不必再执着于从零开始写代码，学会借助现有工具，运用自己的创意，懂得站在巨人肩膀上，总能看得更远，走得更快
