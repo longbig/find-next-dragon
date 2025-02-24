@@ -9,6 +9,34 @@ import leetcode2021.compitetion.ListNode;
  */
 public class LeetCode206 {
 
+    //迭代方法，2025年2月24日重新写，思路：设置前后两个指针遍历链表
+    public ListNode reverseListForDiedai1(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode pre = null, curr = head;
+        while (curr != null) {
+            ListNode next = curr.next;
+            curr.next = pre;
+            pre = curr;
+            curr = next;
+        }
+        return pre;
+    }
+
+    //递归方法，2025年2月24日重新写，思路，把链表看做：头节点 + 后面的节点，当做两个节点来做就行
+    public ListNode reverseListForDigui1(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode newHead = reverseListForDigui1(head.next);
+        head.next.next = head;
+        head.next = null;
+        return newHead;
+
+    }
+
+
     //迭代的方法
     public ListNode reverseList(ListNode head) {
         if (head == null || head.next == null) {
