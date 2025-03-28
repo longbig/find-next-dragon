@@ -1,4 +1,4 @@
-# Java的IO模型详解BIO、NIO、AIO
+# java的IO模型、Netty原理详解
 
 ## 1.什么是IO
 
@@ -28,15 +28,23 @@
 
 适用于低并发、短连接的场景，如传统的HTTP服务
 
+![](D:\IdeaProjects\find-next-dragon\bagu\重点\图片\1.png)
+
 ### NIO（Non-blocking I/O）
 
-**同步非阻塞模型**，客户端发送的连接请求都会注册到Selector多路复用器上，服务器端通过Selector管理多个通道Channel，当某个通道有事件（可读、可写）时，Selector就会通知程序进行处理。
+**同步非阻塞模型**，客户端发送的连接请求都会注册到**Selector多路复用器**上，服务器端通过Selector管理多个通道Channel，Selector会轮询这些连接，当轮询到连接上有IO活动就进行处理。
+
+NIO基于 Channel 和 Buffer 进行操作，数据总是从通道读取到缓冲区或者从缓冲区写入到通道。Selector 用于监听多个通道上的事件（比如收到连接请求、数据达到等等），因此使用单个线程就可以监听多个客户端通道。
+
+**IO多路复用**：一个线程可对应多个连接，不用为每个连接都创建一个线程
+
+![](D:\IdeaProjects\find-next-dragon\bagu\重点\图片\2.png)
 
 核心组件：
 
-* Channel：双向通信通道（如SocketChannel）
-* Buffer：数据缓冲区
-* Selector：轮询多个Channel的就绪事件
+* Channel：双向通信通道（如SocketChannel），数据可流入流出
+* Buffer：数据缓冲区，是双向的，可读可写
+* Selector：一个Selector对应一个线程，一个Selector上可注册多个Channel，并轮询多个Channel的就绪事件
 
 优缺点：
 
@@ -68,19 +76,43 @@
 
 很多中间件的底层通信框架用的都是它，比如：RocketMQ、Dubbo、Elasticsearch
 
+### 4.1 Netty的核心要点
 
+核心特点：
 
+* 高并发：通过**多路复用Selector**实现单线程管理大量连接，减少线程开销
+* 传输快：**零拷贝技术**，减少内存拷贝次数
+* 封装性：简化NIO的复杂API，提供链式处理（ChannelPipeline）和可扩展的编解码能力（如Protobuf支持）
 
+高性能的核心原因：
 
+* **主从Reactor线程模型**，无锁化设计，减少线程竞争
+* **零拷贝技术**，堆外内存直接操作
+* 高效内存管理，对象池技术，**预分配内存块并复用**，对象复用机制
+* **基于Selector的I/O多路复用**，异步事件驱动机制
+* **Selector空轮询问题修复**
 
+### 4.2 零拷贝技术
 
+Netty的零拷贝体现在操作数据时, 不需要将数据 buffer从 一个内存区域拷贝到另一个内存区域。少了一次内存的拷贝，CPU 效率就得到的提升。
 
+### **4.2.1 Linux系统的文件从本地磁盘发送到网络中的零拷贝技术**
 
+![](D:\IdeaProjects\find-next-dragon\bagu\重点\图片\3.png)
 
+* 内核缓冲区是 Linux 系统的 Page Cahe。为了加快磁盘的 IO，Linux 系统会把磁盘上的数据以 Page 为单位缓存在操作系统的内存里
+* 内核缓冲区到 Socket 缓冲区之间并没有做数据的拷贝，只是一个地址的映射，底层的网卡驱动程序要读取数据并发送到网络上的时候，看似读取的是 Socket 的缓冲区中的数据，其实直接读的是内核缓冲区中的数据。
+* 零拷贝中所谓的“零”指的是**内存中数据拷贝的次数为 0**
 
+### **4.2.2 Netty零拷贝技术**
 
+* 使用了堆外内存进行Socket读写，避免JVM堆内存到堆外内存的数据拷贝
+* 提供了CompositeByteBuf合并对象，可以组合多个Buffer对象合并成**一个逻辑上的对象**，用户可以像操作一个Buffer那样对组合Buffer进行操作，避免传统内存拷贝合并
+* 文件传输使用FileRegion，封装FileChannel#transferTo()方法，**将文件缓冲区的内容直接传输到目标Channel**，避免内核缓冲区和用户态缓冲区间的数据拷贝
 
+### **4.2.3 Netty和操作系统的零拷贝的区别？**
 
+Netty 的 Zero-copy 完全是在用户态（Java 应用层）的, 更多的偏向于优化数据操作。而在 OS 层面上的 Zero-copy 通常指避免在用户态（User-space）与内核态（Kernel-space）之间来回拷贝数据
 
-
+## 4.3 Reactor模式
 
