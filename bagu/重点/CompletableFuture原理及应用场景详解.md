@@ -1,25 +1,23 @@
 # CompletableFuture原理及应用场景详解
 
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/重点/CompletableFuture.png)
+
 ## 1.应用场景
 
 现在我们打开各个APP上的一个页面，可能就需要涉及后端几十个服务的API调用，比如某宝、某个外卖APP上，下面是某个外卖APP的首页。首页上的页面展示会关联很多服务的API调用，如果使用同步调用的方式，接口耗时完全不能满足需求，因此，需要用到异步调用的方式。
 
-
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/重点/CF0_1.jpg)
 
 ## 2.使用线程池的弊端
 
 说起异步调用，我们通常是创建一个线程池来实现多个请求的并行调用，这样接口的整体耗时由执行时间最长的线程决定。
 
-
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/重点/CF0_2.png)
 
 但是线程池存在的问题是资源利用率较低：
 
 * CPU资源大量浪费在阻塞等待上
 * CPU调度的线程数增加了，在上下文切换上的资源消耗更大了。而且线程本身也占用系统资源
-
-
-
-
 
 ## 3.CompletableFuture的特性
 
@@ -118,8 +116,6 @@ getUserAddress() 返回结果
 
 Java8之前也可以用guava的ListenableFuture，来设置回调，但是这样又会导致臭名昭著的回调地狱（异步编程中因多层嵌套回调函数导致的代码可读性、可维护性急剧下降的现象），这里不展开了
 
-
-
 ## 5.CompletableFuture的使用
 
 CompletableFuture实现了两个接口：Future和CompletionStage，Future用于异步计算，CompletionStage用于表示异步执行过程汇总的一个步骤Stage
@@ -207,3 +203,72 @@ CompletableFuture<String> result = cf6.thenApply(v -> {
 
 
 
+## 6.CompletableFuture原理
+
+CompletableFuture包含了两个volatile修饰的变量：result和stack
+
+* result存储当前CF的结果
+* stack表示当前CF完成后需要触发的依赖动作，依赖动作可以有多个，以栈形成存储，stack表示栈顶元素
+
+```java
+    volatile Object result;       // Either the result or boxed AltResult
+    volatile Completion stack;    // Top of Treiber stack of dependent actions
+```
+
+Completion类本身是**观察者**的基类
+
+![](/Users/yuyunlong/IdeaProjects/find-next-dragon/bagu/重点/CF6.png)
+
+**被观察者**：每个CF都是一个被观察者，stack中存储的是注册的所有观察者，当CF执行完成后，会弹栈stack，依次通知观察者。result用于存储CF执行的结果数据
+
+**观察者**：回调方法如thenApply、thenAccept会生成一个Completion类型的对象，就是观察者。检查当前CF是否已完成，如果已完成则执行Completion，否则加入观察者链stack中
+
+
+
+## 7.使用问题
+
+### 7.1代码执行在哪个线程上？
+
+CompletableFuture的组合操作都有同步和异步两种方法：
+
+**同步方法**（即不带Async后缀的）：
+
+* 如果注册时被依赖的操作已经执行完成，则直接由**当前线程执行**
+* 如果注册时被依赖操作未执行完，则由**回调线程执行**
+
+**异步方法**（带Async后缀的）：
+
+* 不传递线程池参数Executor时，由公共线程池CommonPool（CPU核数-1）执行
+* 传递时用的传入的指定线程池
+
+### 7.2异步回调要传线程池
+
+异步回调时**强制传入线程池，并根据实际情况做线程池隔离**
+
+不传递时，使用的都是公共线程池CommonPool，容易形成性能瓶颈。手动传递线程池参数可以更方便调节参数，并给不同业务分配不同线程池，做到资源隔离
+
+### 7.3 Future需要获取返回值，才能获取异常信息
+
+```java
+CompletableFuture<Void> future = CompletableFuture.supplyAsync(
+     ......
+)
+
+  //如果不加get()方法这一行，看不到异常信息
+  future.get();
+```
+
+Future需要获取返回值时，才能获取到异常信息，不加get()方法是看不到的。
+
+CompletableFuture还提供了异常捕获回调exceptionally方法，相当于同步调用中的try/catch方法可获取异常
+
+```java
+public CompletableFuture<Integer> getCancelTypeAsync(long orderId) {
+    CompletableFuture<WmOrderOpRemarkResult> remarkResultFuture = wmOrderAdditionInfoThriftService.findOrderCancelledRemarkByOrderIdAsync(orderId);//业务方法，内部会发起异步rpc调用
+    return remarkResultFuture
+      .exceptionally(err -> {//通过exceptionally 捕获异常，打印日志并返回默认值
+         log.error("WmOrderRemarkService.getCancelTypeAsync Exception orderId={}", orderId, err);
+         return 0;
+      });
+}
+```
