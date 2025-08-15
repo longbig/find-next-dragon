@@ -24,24 +24,23 @@ public class LeetCode128 {
      * @return
      */
     public int longestConsecutive(int[] nums) {
-        Set<Integer> hashSet = new HashSet<>();
+        Set<Integer> set = new HashSet<Integer>();
         for (int num : nums) {
-            hashSet.add(num);
+            set.add(num);
         }
 
-        int longestNum = 0, curr = 0;
-        for (int i = 0; i < nums.length; i++) {
-            int temp = nums[i];
-            if (hashSet.contains(temp - 1)) {
+        int maxLen = 0;
+        for (int num : set) {
+            if (set.contains(num - 1)) {
                 continue;
             }
-            curr = 1;
-            while (hashSet.contains(temp + 1)) {
-                curr++;
-                temp = temp + 1;
+            int len = 1, x = num;
+            while (set.contains(x + 1)) {
+                len++;
+                x = x + 1;
             }
-            longestNum = Math.max(longestNum, curr);
+            maxLen = Math.max(maxLen, len);
         }
-        return longestNum;
+        return maxLen;
     }
 }
